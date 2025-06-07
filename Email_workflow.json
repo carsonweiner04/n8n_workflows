@@ -1,0 +1,230 @@
+{
+  "name": "Email workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "96fab8db-ec4a-445d-850e-15075712753d",
+      "name": "Microsoft Outlook Trigger",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "hu9BwBqYTgemAuIG",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "task": "MDA2NzA3MDY0MTkyOTIyMzE4NDU6MDow",
+        "title": "=Respond to email {{ $json.subject }} from {{ $json.from }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "e301000d-77ed-4704-8b33-4ccdd63d55a5",
+      "name": "Google Tasks",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "ZaGVOMaFLTA3cYxT",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "task": "MDA2NzA3MDY0MTkyOTIyMzE4NDU6MDow",
+        "taskId": "={{$json[\"taskList\"]}}{{$json[\"id\"]}}"
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "3032e24a-f4fd-4b3a-bbb0-9dcd46984f67",
+      "name": "Google Tasks1",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "ZaGVOMaFLTA3cYxT",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 24,
+        "unit": "hours"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        0
+      ],
+      "id": "9e964c29-d13d-44ef-b5d5-dd55ced3fe33",
+      "name": "Wait",
+      "webhookId": "02dfde88-99dc-44db-b7b9-e97f4c148a38"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ab341933-43fc-4586-92dd-8fc12de7161c",
+              "leftValue": "={{ $json.items[0].status }}",
+              "rightValue": "needsAction",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        860,
+        0
+      ],
+      "id": "0a619d9b-87dd-47ea-a4b9-0e6132d1aa87",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "carsonweiner04@gmail.com",
+        "subject": "=Reminder: You haven’t responded to the email from {{ $('Microsoft Outlook Trigger').item.json.from }}",
+        "message": "=Respond to  {{ $('Microsoft Outlook Trigger').item.json.from }} regarding{{ $('Microsoft Outlook Trigger').item.json.subject }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1080,
+        60
+      ],
+      "id": "020602a2-a3f1-4790-8ef6-8f364315f1c1",
+      "name": "Gmail1",
+      "webhookId": "c322ee87-dc2a-4a55-85c0-423f63759e1c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UAgBCCA4ME5u5NWw",
+          "name": "Gmail account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Google Tasks": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Microsoft Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Tasks": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Google Tasks1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Tasks1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "269a10f3-466a-4c3b-9813-9491a458aa18",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f318f1eeb582bef69a56797ad1f28184a54cfe51b0e461ee190c5740946ea07e"
+  },
+  "id": "2GZn9fvRoYgKHvWj",
+  "tags": []
+}
