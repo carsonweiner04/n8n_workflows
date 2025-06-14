@@ -1,0 +1,171 @@
+{
+  "name": "Wordpress Workflow 1",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3215c2f4-5b19-42c2-bf37-b17ad9d1dd33",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2d2f5a0-3bec-496d-af36-c263b79a05c4",
+              "name": "Transcript",
+              "value": "Today we explored one of the most transformative principles in the Christian faith — forgiveness.  We began by looking at Matthew 18:21–22, where Peter asks Jesus how many times we must forgive someone. Jesus replies, “Not seven times, but seventy-seven times.” This reveals the radical nature of grace in God’s kingdom.  I shared a story about Corrie ten Boom, a Holocaust survivor who encountered one of her former captors years later. She wrestled with the call to forgive but eventually extended grace — a living example of Christlike mercy.  We also discussed the importance of forgiving ourselves. Many believers struggle under the weight of guilt, forgetting that Christ’s sacrifice is sufficient.  Finally, we looked at practical steps to forgive others: recognizing the hurt, choosing to release the offense, and praying for the one who wronged you. Forgiveness doesn’t excuse the offense, but it frees you from bondage.  As we go into the week, remember: forgiveness is not just a command — it’s a gift we give ourselves and a reflection of the heart of Jesus.",
+              "type": "string"
+            },
+            {
+              "id": "c5ff1e02-c9aa-46ca-980c-bdf21ad94c8d",
+              "name": "Keywords",
+              "value": "Forgiveness, grace, healing",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ],
+      "id": "2cb2767a-cb5b-4458-97e0-9761f17b9413",
+      "name": "Prep Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You're a Christian content writer. Using the transcript below, write a keyword-optimized blog post suitable for a church audience. Incorporate these keywords naturally: {{ $json.keywords }}\n\nTranscript:\n{{ $json.transcript }}\n\nKeep it under 500 words. Include a title and 3–5 headings. Make it engaging and clear.\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        440,
+        0
+      ],
+      "id": "8188dfcc-3ff7-4677-8337-ce18faa69785",
+      "name": "Generate Blog Post",
+      "credentials": {
+        "openAiApi": {
+          "id": "uHhM3GMtCxg9mo7L",
+          "name": "5MT n8n Sermon Publishing Workflow OpenAI Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "title": "={{$json[\"title\"]}}",
+        "additionalFields": {
+          "content": "={{$json[\"content\"]}}",
+          "status": "draft"
+        }
+      },
+      "type": "n8n-nodes-base.wordpress",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        0
+      ],
+      "id": "bea642c3-5478-48f5-bff3-af2e5c879130",
+      "name": "Wordpress",
+      "credentials": {
+        "wordpressApi": {
+          "id": "jwIbFDthM3TJf4Wi",
+          "name": "Wordpress account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.message.content; \nconst lines = text.split('\\n').filter(Boolean);\nconst title = lines[0];\nconst content = lines.slice(1).join('\\n');\n\nreturn [{ json: { title, content } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "cc1c3ccc-579c-4388-90a2-52b62f92d078",
+      "name": "Get Title & Content"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Prep Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Fields": {
+      "main": [
+        [
+          {
+            "node": "Generate Blog Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Blog Post": {
+      "main": [
+        [
+          {
+            "node": "Get Title & Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Title & Content": {
+      "main": [
+        [
+          {
+            "node": "Wordpress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ef6790d0-ae66-4e5d-bbcd-c4669d0962bf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f318f1eeb582bef69a56797ad1f28184a54cfe51b0e461ee190c5740946ea07e"
+  },
+  "id": "eNziItQ45d6SwJrd",
+  "tags": []
+}
